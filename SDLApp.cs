@@ -14,7 +14,6 @@ namespace SDLBase
         private IntPtr  window;
         private IntPtr  windowSurface;
         private IntPtr  renderer;
-        private Bitmap  primarySurface;
         private Bitmap  screen;
         private bool    exit = false;
 
@@ -125,19 +124,29 @@ namespace SDLBase
             {
                 // Same as in the previous block, but it has to copy the buffer line by line, since pitch is different than
                 // buffer width
+
+                // Fixed will pin a certain area location in place while the block is run: we need to do this to make sure the C# 
+                // runtime doesn't move the memory around while we're copying the buffer
                 fixed (byte* srcData = &src.data[0])
                 {
+                    // Start from the first line
                     byte* srcLine = srcData;
 
+                    // For each line in the source data
                     for (int y = 0; y < src.height; y++)
                     {
-                        Buffer.MemoryCopy(srcLine, destData.ToPointer(), src.width * src.height * 4, src.width * 4);
+                        // Copy a whole line
+                        Buffer.MemoryCopy(srcLine, destData.ToPointer(), src.width * 4, src.width * 4);
 
+                        // Move down one line on both buffers
                         srcLine = srcLine + src.width;
                         destData = destData + surfaceData.pitch;
                     }
                 }
             }
         }
+
+        // This function returns the screen to be used by the main loop
+        public Bitmap GetScreen() => screen;
     }
 }
