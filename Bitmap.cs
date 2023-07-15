@@ -70,7 +70,38 @@ namespace SDLBase
             }
         }
 
-        public void Line(Vector2 p1, Vector2 p2, Color32 color)
+        // Default line rendering, uses optimized DDA
+        public void Line(Vector2 p1, Vector2 p2, Color32 color) => LineOptimizedDDA(p1, p2, color);
+
+        // Line drawing with DDA
+        public void LineDDA(Vector2 p1, Vector2 p2, Color32 color)
+        {
+            int x1 = (int)p1.x;
+            int y1 = (int)p1.y;
+            int x2 = (int)p2.x;
+            int y2 = (int)p2.y;
+
+            int dx = x2 - x1;
+            int dy = y2 - y1;
+            int n_steps = Math.Max(Math.Abs(dx), Math.Abs(dy));
+
+            float x = p1.x;
+            float y = p1.y;
+            float incX = (float)dx / n_steps;
+            float incY = (float)dy / n_steps;
+            int   i;
+
+            for (int j = 0; j <= n_steps; j++)
+            {
+                i = (int)x + (int)y * width;
+                data[i] = color;
+                x = x + incX;
+                y = y + incY;
+            }
+        }
+
+        // Optimized DDA line rendering
+        public void LineOptimizedDDA(Vector2 p1, Vector2 p2, Color32 color)
         {
             int x1 = (int)p1.x;
             int y1 = (int)p1.y;
