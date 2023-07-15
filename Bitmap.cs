@@ -31,8 +31,13 @@ namespace SDLBase
             }
         }
 
-        public void Rect(int x1, int y1, int x2, int y2, Color32 color)
+        public void Rect(Vector2 p1, Vector2 p2, Color32 color)
         {
+            int x1 = (int)p1.x;
+            int y1 = (int)p1.y;
+            int x2 = (int)p2.x;
+            int y2 = (int)p2.y;
+
             for (int y = y1; y < y2; y++)
             {
                 int iStart = (x1 + y * width) * 4;
@@ -65,8 +70,13 @@ namespace SDLBase
             }
         }
 
-        public void Line(int x1, int y1, int x2, int y2, Color32 color)
+        public void Line(Vector2 p1, Vector2 p2, Color32 color)
         {
+            int x1 = (int)p1.x;
+            int y1 = (int)p1.y;
+            int x2 = (int)p2.x;
+            int y2 = (int)p2.y;
+
             float dx = Math.Abs(x2 - x1);
             float dy = Math.Abs(y2 - y1);
 
