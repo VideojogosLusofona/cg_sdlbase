@@ -1,7 +1,6 @@
 ﻿
 using SDL2;
 using System;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace SDLBase
 {
