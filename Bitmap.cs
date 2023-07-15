@@ -152,5 +152,68 @@ namespace SDLBase
                 }
             }
         }
+
+        // Bresenham line rendering
+        public void LineBresenham(Vector2 p1, Vector2 p2, Color32 color)
+        {
+            int x1 = (int)p1.x;
+            int y1 = (int)p1.y;
+            int x2 = (int)p2.x;
+            int y2 = (int)p2.y;
+
+            int dx = x2 - x1;
+            int dy = y2 - y1;
+
+            if (Math.Abs(dx) > Math.Abs(dy))
+            {
+                // Iterate on horizontal - Swap to always go from left to right
+                int tmp;
+                if (x2 < x1)
+                {
+                    tmp = x1; x1 = x2; x2 = tmp;
+                    tmp = y1; y1 = y2; y2 = tmp;
+                }
+
+                int y = y1;
+                int D = 2 * dy - dx;
+                int i;
+                for (int x = x1; x <= x2; x++)
+                {
+                    i = x + y * width;
+                    data[i] = color;
+                    if (D > 0)
+                    {
+                        D = D - 2 * dx;
+                        y++;
+                    }
+                    D = D + 2 * dy;
+                }
+            }
+            else
+            {
+                // Iterate on vertical - Swap to always go from top to bottom
+                int tmp;
+                if (y2 < y1)
+                {
+                    tmp = x1; x1 = x2; x2 = tmp;
+                    tmp = y1; y1 = y2; y2 = tmp;
+                }
+
+                int x = x1;
+                int D = 2 * dx - dy;
+                int i;
+                for (int y = y1; y <= y2; y++)
+                {
+                    i = x + y * width;
+                    data[i] = color;
+                    if (D > 0)
+                    {
+                        D = D - 2 * dy;
+                        x++;
+                    }
+                    D = D + 2 * dx;
+                }
+            }
+        }
     }
 }

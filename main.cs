@@ -18,7 +18,7 @@ namespace SDLBase
             {
                 screen.Clear(Color32.black);
 
-                screen.LineDDA(new Vector2(50, 100), new Vector2(412, 200), Color32.yellow);
+                screen.LineBresenham(new Vector2(50, 100), new Vector2(412, 200), Color32.yellow);
             });
 
             app.Shutdown();
