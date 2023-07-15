@@ -113,7 +113,7 @@ namespace SDLBase
             {
                 // Fixed will pin a certain area location in place while the block is run: we need to do this to make sure the C# 
                 // runtime doesn't move the memory around while we're copying the buffer
-                fixed (byte* srcData = &src.data[0])
+                fixed (Color32* srcData = &src.data[0])
                 {
                     // Copy the buffer on the bitmap screen to the target location
                     Buffer.MemoryCopy(srcData, destData.ToPointer(), src.width * src.height * 4, src.width * src.height * 4);
@@ -126,10 +126,10 @@ namespace SDLBase
 
                 // Fixed will pin a certain area location in place while the block is run: we need to do this to make sure the C# 
                 // runtime doesn't move the memory around while we're copying the buffer
-                fixed (byte* srcData = &src.data[0])
+                fixed (Color32* srcData = &src.data[0])
                 {
                     // Start from the first line
-                    byte* srcLine = srcData;
+                    Color32* srcLine = srcData;
 
                     // For each line in the source data
                     for (int y = 0; y < src.height; y++)

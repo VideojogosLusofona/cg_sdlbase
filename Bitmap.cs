@@ -3,126 +3,112 @@ using System.Drawing;
 using System.Numerics;
 using System;
 
-public class Bitmap
+namespace SDLBase
 {
-    public byte[]   data;
-    public int      width, height;
 
-    public Bitmap()
+    public class Bitmap
     {
-        width = height = 0;
-    }
+        public Color32[] data;
+        public int width, height;
 
-    public Bitmap(int width, int height)
-    {
-        this.width = width;
-        this.height = height;
-        data = new byte[width * height * 4];
-    }
-
-    public void Clear(byte r, byte g, byte b, byte a)
-    {
-        for (int i = 0; i < data.Length; i += 4)
+        public Bitmap()
         {
-            data[i] = b;
-            data[i + 1] = g;
-            data[i + 2] = r;
-            data[i + 3] = a;
+            width = height = 0;
         }
-    }
 
-    public void Rect(int x1, int y1, int x2, int y2, byte r, byte g, byte b, byte a)
-    {
-        for (int y = y1; y < y2; y ++)
+        public Bitmap(int width, int height)
         {
-            int iStart = (x1 + y * width) * 4;
-            int iEnd = (x2 + y * width) * 4;
-            for (int i = iStart; i < iEnd; i += 4)
+            this.width = width;
+            this.height = height;
+            data = new Color32[width * height];
+        }
+
+        public void Clear(Color32 color)
+        {
+            for (int i = 0; i < data.Length; i++)
             {
-                data[i] = b;
-                data[i + 1] = g;
-                data[i + 2] = r;
-                data[i + 3] = a;
+                data[i] = color;
             }
         }
-    }
 
-    public void VerticalLine(int x, int y1, int y2, byte r, byte g, byte b, byte a)
-    {
-        int i= (x + y1 * width) * 4;
-        for (int y = y1; y < y2; y++)
+        public void Rect(int x1, int y1, int x2, int y2, Color32 color)
         {
-            data[i] = b;
-            data[i + 1] = g;
-            data[i + 2] = r;
-            data[i + 3] = a;
-
-            i += (width * 4);
-        }
-    }
-
-    public void HorizontalLine(int x1, int x2, int y, byte r, byte g, byte b, byte a)
-    {
-        int i = (x1 + y * width) * 4;
-        for (int x = x1; x < x2; x++)
-        {
-            data[i] = b;
-            data[i + 1] = g;
-            data[i + 2] = r;
-            data[i + 3] = a;
-            i += 4;
-        }
-    }
-
-    public void Line(int x1, int y1, int x2, int y2, byte r, byte g, byte b, byte a)
-    {
-        float dx = Math.Abs(x2 - x1);
-        float dy = Math.Abs(y2 - y1);
-
-        if (dx > dy)
-        {
-            // Iterate on horizontal - Swap to always go from left to right
-            int tmp;
-            if (x2 < x1)
+            for (int y = y1; y < y2; y++)
             {
-                tmp = x1; x1 = x2; x2 = tmp;
-                tmp = y1; y1 = y2; y2 = tmp;
-            }
-
-            float y = y1;
-            float incY = (y2 - y1) / (float)(x2 - x1);
-            int   i;
-            for (int x = x1; x <= x2; x++)
-            {
-                i = (x + (int)y * width) * 4;
-                data[i] = b;
-                data[i + 1] = g;
-                data[i + 2] = r;
-                data[i + 3] = a;
-                y = y + incY;
+                int iStart = (x1 + y * width) * 4;
+                int iEnd = (x2 + y * width) * 4;
+                for (int i = iStart; i < iEnd; i++)
+                {
+                    data[i] = color;
+                }
             }
         }
-        else
-        {
-            // Iterate on vertical - Swap to always go from top to bottom
-            int tmp;
-            if (y2 < y1)
-            {
-                tmp = x1; x1 = x2; x2 = tmp;
-                tmp = y1; y1 = y2; y2 = tmp;
-            }
 
-            float x = x1;
-            float incX = (x2 - x1) / (float)(y2 - y1);
-            int i;
-            for (int y = y1; y <= y2; y++)
+        public void VerticalLine(int x, int y1, int y2, Color32 color)
+        {
+            int i = x + y1 * width;
+            for (int y = y1; y < y2; y++)
             {
-                i = ((int)x + y * width) * 4;
-                data[i] = b;
-                data[i + 1] = g;
-                data[i + 2] = r;
-                data[i + 3] = a;
-                x = x + incX;
+                data[i] = color;
+
+                i += width;
+            }
+        }
+
+        public void HorizontalLine(int x1, int x2, int y, Color32 color)
+        {
+            int i = x1 + y * width;
+            for (int x = x1; x < x2; x++)
+            {
+                data[i] = color;
+                i++;
+            }
+        }
+
+        public void Line(int x1, int y1, int x2, int y2, Color32 color)
+        {
+            float dx = Math.Abs(x2 - x1);
+            float dy = Math.Abs(y2 - y1);
+
+            if (dx > dy)
+            {
+                // Iterate on horizontal - Swap to always go from left to right
+                int tmp;
+                if (x2 < x1)
+                {
+                    tmp = x1; x1 = x2; x2 = tmp;
+                    tmp = y1; y1 = y2; y2 = tmp;
+                }
+
+                float y = y1;
+                float incY = (y2 - y1) / (float)(x2 - x1);
+                int i;
+                for (int x = x1; x <= x2; x++)
+                {
+                    i = x + (int)y * width;
+                    data[i] = color;
+                    y = y + incY;
+                }
+            }
+            else
+            {
+                // Iterate on vertical - Swap to always go from top to bottom
+                int tmp;
+                if (y2 < y1)
+                {
+                    tmp = x1; x1 = x2; x2 = tmp;
+                    tmp = y1; y1 = y2; y2 = tmp;
+                }
+
+                float x = x1;
+                float incX = (x2 - x1) / (float)(y2 - y1);
+                int i;
+                for (int y = y1; y <= y2; y++)
+                {
+                    i = (int)x + y * width;
+                    data[i] = color;
+                    x = x + incX;
+                }
             }
         }
     }

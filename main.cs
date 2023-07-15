@@ -16,17 +16,9 @@ namespace SDLBase
 
             app.Run(() =>
             {
-                screen.Clear(0, 0, 0, 255);
+                screen.Clear(Color32.black);
 
-                screen.Rect(10, 10, 100, 200, 255, 255, 0, 255);
-
-                screen.VerticalLine(200, 10, 200, 0, 255, 0, 255);
-
-                screen.HorizontalLine(10, 100, 220, 0, 255, 255, 255);
-
-                screen.Line(400, 400, 450, 500, 255, 0, 255, 255);
-                screen.Line(450, 400, 400, 500, 255, 255, 255, 255);
-                screen.Line(350, 425, 500, 475, 255, 0, 0, 255);
+                screen.Line(new Vector2(-50, 100), new Vector2(612, 200), Color32.yellow);
             });
 
             app.Shutdown();
