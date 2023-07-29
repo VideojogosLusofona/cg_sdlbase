@@ -25,7 +25,8 @@ namespace SDLBase
 
             app.Run(() =>
             {
-                screen.TriangleScanline(new Vector2(100, 100), new Vector2(200, 400), new Vector2(300, 200), color);
+                screen.TriangleHalfspace(new Vector2(100, 100), new Vector2(200, 400), new Vector2(300, 200),
+                                         new Color32(255, 255, 0, 255), new Color32(0, 255, 0, 255), new Color32(255, 0, 0, 255));
             });
 
         }
