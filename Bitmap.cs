@@ -381,5 +381,131 @@ namespace SDLBase
             }
         }
 
+        public void TriangleScanline(Vector2 p0, Vector2 p1, Vector2 p2, Color32 color)
+        {
+            Vector2[] p = new Vector2[] { p0, p1, p2 };
+
+            // Find smallest Y
+            int minIndexY = 0;
+            if (p[minIndexY].y > p[1].y) minIndexY = 1;
+            if (p[minIndexY].y > p[2].y) minIndexY = 2;
+
+            // Find edge X
+            int minIndexX, maxIndexX;
+            minIndexX = maxIndexX = -1;
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (i == minIndexY) continue;
+                if ((minIndexX == -1) || (p[minIndexX].x > p[i].x)) minIndexX = i;
+                if ((maxIndexX == -1) || (p[maxIndexX].x < p[i].x)) maxIndexX = i;
+            }
+
+            // Find Y limits
+            int midIndexY, maxIndexY;
+            if (p[minIndexX].y < p[maxIndexX].y)
+            {
+                midIndexY = minIndexX;
+                maxIndexY = maxIndexX;
+            }
+            else
+            {
+                midIndexY = maxIndexX;
+                maxIndexY = minIndexX;
+            }
+
+            // We start at minY and go down on both edges minX and maxX
+            // Then, at midY, we recompute one of the edges that's not midY and minY
+            int y1 = (int)p[minIndexY].y;
+            int y2 = (int)p[midIndexY].y;
+            int y3 = (int)p[maxIndexY].y;
+
+            float minX, maxX;
+            minX = maxX = p[minIndexY].x;
+
+            float incMinX = (p[minIndexX].x - minX) / (p[minIndexX].y - p[minIndexY].y);
+            float incMaxX = (p[maxIndexX].x - maxX) / (p[maxIndexX].y - p[minIndexY].y);
+
+            bool earlyOut = false;
+            if (y2 > height) { y2 = height - 1; earlyOut = true; }
+
+            // Special case: horizontal edge on top
+            if ((int)p[minIndexY].y == (int)p[minIndexX].y)
+            {
+                earlyOut = true;
+                midIndexY = maxIndexX;
+                y2 = (int)Math.Min(p[midIndexY].y + 1, height - 1);
+                if (p[minIndexY].x < p[minIndexX].x) { minX = p[minIndexY].x; maxX = p[minIndexX].x; }
+                else { minX = p[minIndexX].x; maxX = p[minIndexY].x; }
+
+                incMinX = (p[midIndexY].x - minX) / (p[midIndexY].y - p[minIndexY].y);
+                incMaxX = (p[midIndexY].x - maxX) / (p[midIndexY].y - p[minIndexY].y);
+            }
+            else if ((int)p[minIndexY].y == (int)p[maxIndexX].y)
+            {
+                earlyOut = true;
+                midIndexY = minIndexX;
+                y2 = (int)Math.Min(p[midIndexY].y + 1, height - 1);
+                if (p[minIndexY].x < p[maxIndexX].x) { minX = p[minIndexY].x; maxX = p[maxIndexX].x; }
+                else { minX = p[maxIndexX].x; maxX = p[minIndexY].x; }
+
+                incMinX = (p[midIndexY].x - minX) / (p[midIndexY].y - p[minIndexY].y);
+                incMaxX = (p[midIndexY].x - maxX) / (p[midIndexY].y - p[minIndexY].y);
+            }
+
+            for (int y = y1; y < y2; y++)
+            {
+                if (y >= 0)
+                {
+                    // Fill span
+                    int m1 = (minX >= 0) ? ((int)minX) : (0);
+                    int m2 = (maxX < width) ? ((int)maxX) : (width - 1);
+
+                    int idx = y * width + m1;
+                    for (int x = m1; x <= m2; x++)
+                    {
+                        data[idx] = color;
+                        idx++;
+                    }
+                }
+
+                minX = minX + incMinX;
+                maxX = maxX + incMaxX;
+            }
+
+            // Out of the bottom of the screen, no point in more calculations
+            if (earlyOut) return;
+
+            if (minIndexX == midIndexY)
+            {
+                incMinX = (p[maxIndexX].x - minX) / (y3 - y2);
+            }
+            else
+            {
+                incMaxX = (p[minIndexX].x - maxX) / (y3 - y2);
+            }
+
+            if (y3 >= height) y3 = height - 1;
+
+            for (int y = y2; y <= y3; y++)
+            {
+                if (y >= 0)
+                {
+                    // Fill span
+                    int m1 = (minX >= 0) ? ((int)minX) : (0);
+                    int m2 = (maxX < width) ? ((int)maxX) : (width - 1);
+
+                    int idx = y * width + m1;
+                    for (int x = m1; x <= m2; x++)
+                    {
+                        data[idx] = color;
+                        idx++;
+                    }
+                }
+
+                minX = minX + incMinX;
+                maxX = maxX + incMaxX;
+            }
+        }
     }
 }
