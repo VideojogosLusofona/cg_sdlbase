@@ -1,6 +1,7 @@
 ﻿
 using SDL2;
 using System;
+using System.Runtime.InteropServices;
 
 namespace SDLBase
 {
@@ -42,6 +43,12 @@ namespace SDLBase
 
             // Get the window surface - We'll need this to copy our data at the end
             windowSurface = SDL.SDL_GetWindowSurface(window);
+
+            var surface = Marshal.PtrToStructure<SDL.SDL_Surface>(windowSurface);
+            var pixeLFormat = Marshal.PtrToStructure<SDL.SDL_PixelFormat>(surface.format);
+            var formatName = SDL.SDL_GetPixelFormatName(pixeLFormat.format);
+            Console.WriteLine($"Window surface format = {formatName}");
+
             // Create a software based renderer. We could create an accelerated one for a series of reasons,
             // but for our test case we want to have full control over the pixels
             renderer = SDL.SDL_CreateSoftwareRenderer(windowSurface);
