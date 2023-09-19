@@ -217,7 +217,7 @@ namespace SDLBase
             }
         }
 
-        // Line rendering, clipped with Liang-Barsky
+        // Line rendering, clipped with Cohen-Sutherland
         public void LineClippedCS(Vector2 p1, Vector2 p2, Color32 color)
         {
             const int Inside = 0;
