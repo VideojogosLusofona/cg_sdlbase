@@ -508,6 +508,51 @@ namespace SDLBase
             }
         }
 
+        float EdgeFunction(Vector2 p0, Vector2 p1, Vector2 p)
+        {
+            return (p.x - p0.x) * (p1.y - p0.y) - (p.y - p0.y) * (p1.x - p0.x);
+        }
+
+        public void TriangleHalfspace(Vector2 p0, Vector2 p1, Vector2 p2,
+                                      Color32 color)
+        {
+            // Get bounding rectangle
+            int xMin = (int)Math.Min(p0.x, Math.Min(p1.x, p2.x));
+            int xMax = (int)Math.Max(p0.x, Math.Max(p1.x, p2.x));
+            int yMin = (int)Math.Min(p0.y, Math.Min(p1.y, p2.y));
+            int yMax = (int)Math.Max(p0.y, Math.Max(p1.y, p2.y));
+
+            // Clip to screen
+            xMin = Math.Max(0, Math.Min(xMin, width - 1));
+            xMax = Math.Max(0, Math.Min(xMax, width - 1));
+            yMin = Math.Max(0, Math.Min(yMin, height - 1));
+            yMax = Math.Max(0, Math.Min(yMax, height - 1));
+
+            // Other variables we need in iteration
+            Vector2 p = new Vector2();
+            int     idx;
+            float   w0, w1, w2;
+            // For all points in rectangle
+            for (int y = yMin; y <= yMax; y++)
+            {
+                p.y = y;
+                for (int x = xMin; x <= xMax; x++)
+                {
+                    p.x = x;
+
+                    w0 = EdgeFunction(p1, p2, p);
+                    w1 = EdgeFunction(p2, p0, p);
+                    w2 = EdgeFunction(p0, p1, p);
+
+                    if ((w0 > 0) && (w1 > 0) && (w2 > 0))
+                    {
+                        idx = x + y * width;
+                        data[idx] = color;
+                    }
+                }
+            }
+        }
+
         public void TriangleHalfspace(Vector2 p0, Vector2 p1, Vector2 p2, 
                                       Color32 c0, Color32 c1, Color32 c2)
         {
@@ -523,47 +568,34 @@ namespace SDLBase
             yMin = Math.Max(0, Math.Min(yMin, height - 1));
             yMax = Math.Max(0, Math.Min(yMax, height - 1));
 
-            // Get edge vectors
-            Vector2 e0 = p1 - p0;
-            Vector2 e1 = p2 - p0;
-            float dot00 = Vector2.Dot(e0, e0);
-            float dot01 = Vector2.Dot(e0, e1);
-            float dot11 = Vector2.Dot(e1, e1);
-            float invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
-
-            Vector2 currentPoint = new Vector2();
-
-            // Convert color to floating point - We can't do this directly on
-            // the Color32 because of the limited precision of bytes
-            Color color0 = (Color)c0;
-            Color color1 = (Color)c1;
-            Color color2 = (Color)c2;
-
+            // Compute triangle edge - EdgeFunction returns the area times 2
+            float area = EdgeFunction(p0, p1, p2);
+            // Need to convert colors to floating point, so the interpolation
+            // is correct
+            Color cf0 = (Color)c0;
+            Color cf1 = (Color)c1;
+            Color cf2 = (Color)c2;
             // Other variables we need in iteration
-            Vector2 p;
+            Vector2 p = new Vector2();
             int     idx;
-            float   dot02, dot12;
-            float   u, v;
-            Color32 color;
+            float   w0, w1, w2;
             // For all points in rectangle
             for (int y = yMin; y <= yMax; y++)
             {
-                currentPoint.y = y;
+                p.y = y;
                 for (int x = xMin; x <= xMax; x++)
                 {
-                    currentPoint.x = x;
+                    p.x = x;
 
-                    p = currentPoint - p0;
-                    dot02 = Vector2.Dot(e0, p);
-                    dot12 = Vector2.Dot(e1, p);
-                    u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-                    v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+                    w0 = EdgeFunction(p1, p2, p);
+                    w1 = EdgeFunction(p2, p0, p);
+                    w2 = EdgeFunction(p0, p1, p);
 
-                    if ((u >= 0) && (v >= 0) && (u + v < 1))
+                    if ((w0 > 0) && (w1 > 0) && (w2 > 0))
                     {
+                        w0 /= area; w1 /= area; w2 /= area;
                         idx = x + y * width;
-                        color = (Color32)(color0 + u * (color1 - color0) + v * (color2 - color0));
-                        data[idx] = color;
+                        data[idx] = (Color32)(cf0 * w0 + cf1 * w1 + cf2 * w2);
                     }
                 }
             }
