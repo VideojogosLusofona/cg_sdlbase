@@ -39,12 +39,28 @@ namespace SDLBase
 
         public float magnitude
         {
-            get { return (float)Math.Sqrt(x * x + y * y); }
+            get { return MathF.Sqrt(x * x + y * y); }
+        }
+
+        public float squaredMagnitude
+        {
+            get { return (x * x + y * y); }
         }
 
         public Vector2 normalized
         {
             get { return this * (1.0f / magnitude); }
+        }
+
+        public void Rotate(float angleInRadians)
+        {
+            float c = MathF.Cos(angleInRadians);
+            float s = MathF.Sin(angleInRadians);
+            float newX = x * c - y * s;
+            float newY = x * s + y * c;
+
+            x = newX;
+            y = newY;
         }
 
         public override string ToString()

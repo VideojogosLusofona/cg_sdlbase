@@ -507,5 +507,118 @@ namespace SDLBase
                 maxX = maxX + incMaxX;
             }
         }
+
+        // Draw a filled ellipse using a scanline algorithm
+        public void EllipseFill(Vector2 center, Vector2 radius, Color32 color)
+        {
+            // Convert center to integers
+            int cx = (int)center.x;
+            int cy = (int)center.y;
+
+            // Compute top and bottom
+            int yTop = cy - (int)radius.y;
+            int yBottom = cy + (int)radius.y;
+
+            // Outside of screen
+            if (yTop >= height) return;
+            if (yBottom < 0) return;
+
+            // Clip to screen
+            if (yTop < 0) yTop = 0;
+            if (yBottom >= height) yBottom = height - 1;
+
+            // For all scanlines on the circle
+            for (int y = yTop; y <= yBottom; y++)
+            {
+                // Find out the radius at this height
+                // Remember that x^2 + y^2 = 1
+                float   tmpY = (y - cy) / radius.y; tmpY *= tmpY;
+                int     dx = (int)(radius.x * MathF.Sqrt(1 - tmpY));
+
+                // Define bounds and clip them to screen edges
+                int xStart = Math.Max(0, cx - dx);
+                int xEnd = Math.Min(width - 1, cx + dx);
+
+                // Draw an horizontal line between start and end
+                for (int x = xStart; x <= xEnd; x++)
+                {
+                    int index = x + y * width;
+                    data[index] = color;
+                }
+            }
+        }
+
+        // Draw a filled rotated ellipse with rotation using a fill algorithm
+        public void EllipseFill(Vector2 center, Vector2 radius, float rotation, Color32 color)
+        {
+            // Compute radius squared
+            float rx2 = radius.x * radius.x;
+            float ry2 = radius.y * radius.y;
+
+            // Figure out the bounds of the rotated ellipse
+            // Get corners of the rectangle of the ellipse (unrotated) 
+            Vector2[] corners = new Vector2[4] { new Vector2(-radius.x, -radius.y),
+                                                 new Vector2(-radius.x, +radius.y),
+                                                 new Vector2(+radius.x, -radius.y),
+                                                 new Vector2(+radius.x, +radius.y) };
+            // Rotate points
+            for (int i = 0; i < 4; i++) corners[i].Rotate(rotation);
+            // Find the min/max of the coordinates
+            int minX = (int)(MathF.Min(corners[0].x, MathF.Min(corners[1].x, MathF.Min(corners[2].x, corners[3].x))) + center.x);
+            int maxX = (int)(MathF.Max(corners[0].x, MathF.Max(corners[1].x, MathF.Max(corners[2].x, corners[3].x))) + center.x);
+            int minY = (int)(MathF.Min(corners[0].y, MathF.Min(corners[1].y, MathF.Min(corners[2].y, corners[3].y))) + center.y);
+            int maxY = (int)(MathF.Max(corners[0].y, MathF.Max(corners[1].y, MathF.Max(corners[2].y, corners[3].y))) + center.y);
+
+            // There is an analytical way to find this, based on the fact that the equation for the 
+            // ellipse is (x - cx)^2/rx^2 + (y - cy)^2/ry^2 = 1
+            // Solve it for the corners, and you get the code below:
+            // float xFactor1 = radius.x * MathF.Cos(rotation); xFactor1 *= xFactor1;
+            // float xFactor2 = radius.y * MathF.Sin(rotation); xFactor2 *= xFactor2;
+            // float xFactor = MathF.Sqrt(xFactor1 + xFactor2);
+            // minX = (int)(center.x - xFactor);
+            // maxX = (int)(center.x + xFactor);
+            // float yFactor1 = radius.x * MathF.Sin(rotation); yFactor1 *= yFactor1;
+            // float yFactor2 = radius.y * MathF.Cos(rotation); yFactor2 *= yFactor2;
+            // float yFactor = MathF.Sqrt(yFactor1 + yFactor2);
+            // minY = (int)(center.y - yFactor);
+            // maxY = (int)(center.y + yFactor);
+
+            // Clip bounds to screen
+            if (minY < 0) minY = 0;
+            if (maxY < 0) return;
+            if (minX < 0) minX = 0;
+            if (maxX < 0) return;
+            if (minY >= height) return;
+            if (maxY >= height) maxY = height - 1;
+            if (minX >= width) return;
+            if (maxX >= width) maxX = width - 1;
+
+            // Get ellipse axis
+            Vector2 axisX = new Vector2(radius.x, 0); axisX.Rotate(rotation);
+            Vector2 axisY = new Vector2(0, radius.y); axisY.Rotate(rotation);
+
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    // Now check if (x,y) is within the rotated ellipse
+                    // Compute vector from center to (x,y)
+                    Vector2 d = new Vector2(x, y) - center;
+                    // Project d onto both axis
+                    float dx = Vector2.Dot(d, axisX) / axisX.magnitude;
+                    float dy = Vector2.Dot(d, axisY) / axisY.magnitude;
+
+                    // Solve the ellipse equation
+                    float r = (dx * dx / rx2) + (dy * dy / ry2);
+
+                    // Check if inside
+                    if (r <= 1)
+                    {
+                        int index = x + y * width;
+                        data[index] = color;
+                    }
+                }
+            }
+        }
     }
 }

@@ -12,20 +12,36 @@ namespace SDLBase
 
             app.Initialize();
 
-            DrawTriangle(app);
+            DrawSkewedCircles(app);
 
             app.Shutdown();
         }
 
-        static void DrawTriangle(SDLApp app)
+        static void DrawCircles(SDLApp app)
         {
             Bitmap screen = app.GetScreen();
 
-            Color32 color = new Color32(255, 255, 0, 255);
+            app.Run(() =>
+            {
+                screen.EllipseFill(new Vector2(200, 200), new Vector2(100, 100), new Color32(255, 255, 0, 255));
+                screen.EllipseFill(new Vector2(350, 200), new Vector2(50, 100), new Color32(255, 0, 0, 255));
+                screen.EllipseFill(new Vector2(250, 400), new Vector2(100, 50), new Color32(0, 255, 0, 255));
+            });
+
+        }
+        static void DrawSkewedCircles(SDLApp app)
+        {
+            Bitmap screen = app.GetScreen();
+
+            float angle = 0;
 
             app.Run(() =>
             {
-                screen.TriangleScanline(new Vector2(100, 100), new Vector2(200, 400), new Vector2(300, 200), color);
+                screen.Clear(new Color32(0, 0, 0, 255));
+
+                screen.EllipseFill(new Vector2(200, 200), new Vector2(50, 100), angle, new Color32(255, 255, 0, 255));
+                screen.EllipseFill(new Vector2(200, 200), new Vector2(40, 90), angle, new Color32(255, 0, 0, 255));
+                angle += 0.01f;
             });
 
         }
